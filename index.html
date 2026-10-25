@@ -1,0 +1,586 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>尿もれセルフチェック</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* Layout: 保健室の問診票。一問ずつ答える1カラム。結果はスクリーンショットで残せるカードにまとめる */
+:root {
+  --bg: #EAF1EE;
+  --surface: #FFFFFF;
+  --ink: #1B3230;
+  --ink-soft: #4A605C;
+  --line: #C5D4CF;
+  --accent: #2A7F78;
+  --on-accent: #FFFFFF;
+  --accent-soft: #D5EAE5;
+  --focus: #1B5FAA;
+  --lv1: #2A7F78;
+  --lv1-soft: #D5EAE5;
+  --lv2: #C98A1B;
+  --lv2-soft: #F6E8C9;
+  --lv3: #B5476B;
+  --lv3-soft: #F5DCE4;
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+  --font-body: "BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1A19;
+    --surface: #172725;
+    --ink: #E4EFEC;
+    --ink-soft: #A3B9B4;
+    --line: #2C423F;
+    --accent: #6CC4B9;
+    --on-accent: #0C211F;
+    --accent-soft: #1D3835;
+    --focus: #8DBBF0;
+    --lv1: #5FBFB4;
+    --lv1-soft: #1D3835;
+    --lv2: #E2AB45;
+    --lv2-soft: #3A2F18;
+    --lv3: #E6849F;
+    --lv3-soft: #3D2030;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1A19;
+  --surface: #172725;
+  --ink: #E4EFEC;
+  --ink-soft: #A3B9B4;
+  --line: #2C423F;
+  --accent: #6CC4B9;
+  --on-accent: #0C211F;
+  --accent-soft: #1D3835;
+  --focus: #8DBBF0;
+  --lv1: #5FBFB4;
+  --lv1-soft: #1D3835;
+  --lv2: #E2AB45;
+  --lv2-soft: #3A2F18;
+  --lv3: #E6849F;
+  --lv3-soft: #3D2030;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.75;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 56px;
+}
+.wrap { max-width: 560px; margin: 0 auto; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.4; margin: 0; text-wrap: balance; }
+h1 { font-size: 27px; }
+h2 { font-size: 22px; }
+h3 { font-size: 18px; }
+p { margin: 0; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+[tabindex="-1"]:focus { outline: none; }
+
+/* header */
+.brand { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand b { font-family: var(--font-display); font-size: 17px; letter-spacing: .06em; }
+.brand span { font-size: 12.5px; color: var(--ink-soft); }
+
+/* steps */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.steps li { border-top: 4px solid var(--line); padding-top: 6px; font-size: 12.5px; line-height: 1.4; color: var(--ink-soft); }
+.steps li.done, .steps li.now { border-top-color: var(--accent); }
+.steps li.now { color: var(--ink); font-weight: 700; }
+.steps li .n { display: inline-block; min-width: 1.2em; font-variant-numeric: tabular-nums; }
+
+/* generic */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px 18px; display: grid; gap: 16px; }
+.lead { font-size: 17.5px; }
+.soft { color: var(--ink-soft); font-size: 14.5px; line-height: 1.7; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.facts li { background: var(--accent-soft); border-radius: 12px; padding: 10px 6px; text-align: center; font-size: 14px; line-height: 1.4; }
+.facts b { display: block; font-family: var(--font-display); font-size: 17px; }
+.flow { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; font-size: 15.5px; }
+.btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  appearance: none; border: 1.5px solid var(--accent); background: var(--accent); color: var(--on-accent);
+  font: 700 17px/1.3 var(--font-display); min-height: 52px; padding: 12px 22px; border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; text-decoration: none; text-align: center;
+}
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn[disabled] { opacity: .4; cursor: default; }
+.btn.wide { flex: 1 1 100%; }
+.nav { display: flex; justify-content: space-between; gap: 10px; }
+.nav .btn { flex: 0 1 auto; min-width: 112px; }
+
+/* progress bar */
+.bar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s ease; }
+.qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; color: var(--ink-soft); }
+.qhead b { color: var(--ink); font-family: var(--font-display); font-size: 15px; }
+.qhead .c { font-variant-numeric: tabular-nums; }
+
+/* question + options */
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 14px; }
+legend { padding: 0; font-family: var(--font-display); font-weight: 700; font-size: 19.5px; line-height: 1.55; margin-bottom: 14px; text-wrap: pretty; }
+.opts { display: grid; gap: 10px; }
+.opts.seg { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.opts.scale { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.opt { position: relative; display: block; }
+.opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.opt span {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  min-height: 58px; padding: 8px 4px; border: 1.5px solid var(--line); border-radius: 12px;
+  background: var(--surface); font-weight: 700; font-size: 15px; line-height: 1.35;
+}
+.opts.stack .opt span { justify-content: flex-start; text-align: left; padding: 12px 14px; font-weight: 400; font-size: 16.5px; }
+.opts.scale .opt span { min-height: 52px; font-size: 17px; font-variant-numeric: tabular-nums; padding: 8px 0; }
+.opt input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
+.opt input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+.legend { font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+.ends { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; color: var(--ink-soft); }
+
+/* flags */
+.flags { display: grid; gap: 10px; }
+.flag { display: flex; gap: 12px; align-items: flex-start; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); cursor: pointer; font-size: 16px; line-height: 1.6; }
+.flag input { width: 24px; height: 24px; margin: 2px 0 0; flex: none; accent-color: var(--accent); }
+.flag:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+/* notices */
+.note { border-radius: 14px; padding: 14px 16px; font-size: 15.5px; line-height: 1.7; display: grid; gap: 6px; }
+.note b { font-family: var(--font-display); font-size: 16.5px; }
+.note.see { background: var(--lv3-soft); border: 1.5px solid var(--lv3); }
+.note.ask { background: var(--lv2-soft); border: 1.5px solid var(--lv2); }
+.note.info { background: var(--accent-soft); }
+.listed { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+
+/* result card */
+.rcard { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.rtop { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 12px 18px; background: var(--accent-soft); font-size: 13.5px; }
+.rtop b { font-family: var(--font-display); letter-spacing: .04em; font-size: 14.5px; }
+.rbody { padding: 18px; display: grid; gap: 22px; }
+.tend { display: grid; gap: 2px; }
+.tend .k { font-size: 13px; color: var(--ink-soft); }
+.tend .v { font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.45; }
+.metric { display: grid; gap: 8px; }
+.mhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mhead h3 { font-size: 16.5px; }
+.chip { display: inline-block; padding: 2px 12px; border-radius: 99px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.chip.l0, .chip.l1 { background: var(--lv1-soft); }
+.chip.l2 { background: var(--lv2-soft); }
+.chip.l3 { background: var(--lv3-soft); }
+.score { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+.score .num { font-family: var(--font-display); font-weight: 700; font-size: 52px; line-height: 1; }
+.score .max { color: var(--ink-soft); font-size: 15px; }
+.meter { position: relative; margin: 14px 8px 0; }
+.segs, .ticks { display: flex; gap: 2px; }
+.segs { height: 14px; border-radius: 99px; overflow: hidden; }
+.segs i { display: block; }
+.segs i.l1 { background: var(--lv1-soft); } .segs i.l1.on { background: var(--lv1); }
+.segs i.l2 { background: var(--lv2-soft); } .segs i.l2.on { background: var(--lv2); }
+.segs i.l3 { background: var(--lv3-soft); } .segs i.l3.on { background: var(--lv3); }
+.ticks { margin-top: 5px; font-size: 12.5px; color: var(--ink-soft); }
+.ticks span { text-align: center; white-space: nowrap; }
+.pin { position: absolute; top: -9px; width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 10px solid var(--ink); transform: translateX(-50%); }
+.mbody { font-size: 15.5px; line-height: 1.75; }
+.spots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.spots span { background: var(--lv2-soft); border-radius: 99px; padding: 2px 11px; font-size: 13.5px; }
+.spots-k { font-size: 13px; color: var(--ink-soft); margin-top: 6px; }
+.small-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.small-metrics div { background: var(--accent-soft); border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--ink-soft); line-height: 1.5; }
+.small-metrics b { display: block; font-family: var(--font-display); color: var(--ink); font-size: 18px; }
+.rfoot { padding: 10px 18px 14px; font-size: 12.5px; color: var(--ink-soft); border-top: 1px solid var(--line); line-height: 1.6; }
+
+.cta { background: var(--accent-soft); border-radius: 16px; padding: 18px; display: grid; gap: 12px; }
+.copybox { width: 100%; min-height: 150px; font: 15px/1.7 var(--font-body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: vertical; }
+.foot { text-align: center; font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; }
+.foot b { font-family: var(--font-display); letter-spacing: .04em; color: var(--ink); }
+
+@media (max-width: 380px) {
+  body { font-size: 16.5px; }
+  h1 { font-size: 24px; }
+  .opts.seg .opt span { font-size: 14px; }
+  .opts.scale { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="brand"><b>imaaru</b><span>人生後半の働く女性の保健室</span></header>
+  <nav id="steps" aria-label="進み具合" hidden></nav>
+  <main id="app" aria-live="polite"></main>
+  <footer class="foot"><b>imaaru</b>｜人生後半の働く女性の保健室<br>このページは診断や治療を行うものではありません。</footer>
+  <noscript><p class="note ask">このチェックはJavaScriptを使います。ブラウザの設定で有効にしてください。</p></noscript>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // 案内先のリンク。入れると結果画面にボタンが出ます(空なら表示しません)
+  var LINKS = { note: '', instagram: '', consult: '' };
+
+  var FREQ = ['ない', 'たまに', 'よくある', 'ほぼ毎回'];
+  var FREQ_DAY = ['ない', 'たまに', 'よくある', 'ほぼ毎日'];
+  var NIGHT = ['0回', '1回', '2回', '3回以上'];
+
+  var FLAGS = [
+    { id: 'f1', lv: 'see', t: '尿に血が混じって見えた。または、熱がある、排尿のときに強く痛む' },
+    { id: 'f2', lv: 'see', t: '閉経後に、不正な出血がある' },
+    { id: 'f3', lv: 'see', t: '尿が出にくい、出し切れていない感じが強い、尿の勢いが弱い' },
+    { id: 'f4', lv: 'urgent', t: '急に尿もれが始まり、足のしびれや力の入りにくさ、股のあたりの感覚の鈍さがある' },
+    { id: 'f5', lv: 'see', t: '膣の入り口から何かが出てくる、触れる。または、強く下がった感じがある' },
+    { id: 'f6', lv: 'see', t: '骨盤まわりの強い痛み、または性交のときの痛みがある' },
+    { id: 'f7', lv: 'see', t: 'のどが強く渇く、尿の量が極端に多い、体重が減ってきた、のいずれかがあり、トイレも近い' },
+    { id: 'f8', lv: 'ask', t: '妊娠中、または産後まもない。直近で骨盤内の手術を受けた。泌尿器科・婦人科で治療中' }
+  ];
+
+  var QS = [
+    { id: 'M1', set: 'M', kind: 'seg', opts: FREQ, legend: true, t: 'この2週間で、咳・くしゃみ・笑う・運動のときに、尿が漏れましたか?' },
+    { id: 'M2', set: 'M', kind: 'seg', opts: FREQ_DAY, legend: true, t: 'この2週間で、急に強い尿意が来て、我慢しにくい・トイレに間に合わない、ということはありましたか?' },
+    { id: 'M3', set: 'M', kind: 'seg', opts: NIGHT, t: '夜、トイレのために起きる回数は、1晩あたりどのくらいですか?(この2週間の平均)' },
+    { id: 'M4', set: 'M', kind: 'scale', t: '尿もれやトイレのことで、いま、どのくらい困っていますか?', lo: '0 まったく困らない', hi: '10 とても困る' },
+
+    { id: 'S1', set: 'S', kind: 'seg', opts: FREQ, legend: true, short: 'くしゃみ・咳', t: 'この2週間で、くしゃみや咳をしたときに、尿が漏れましたか?' },
+    { id: 'S2', set: 'S', kind: 'seg', opts: FREQ, legend: true, short: '笑ったとき', t: '笑ったときに、尿が漏れましたか?' },
+    { id: 'S3', set: 'S', kind: 'seg', opts: FREQ, legend: true, short: '持ち上げる・立ち上がる・かがむ', t: '重い物を持つ、立ち上がる、かがむときに、尿が漏れましたか?' },
+    { id: 'S4', set: 'S', kind: 'seg', opts: FREQ, legend: true, short: '階段・早歩き・坂道', t: '階段、早歩き、坂道のときに、尿が漏れましたか?' },
+    { id: 'S5', set: 'S', kind: 'seg', opts: FREQ, legend: true, short: '走る・跳ぶ・運動', t: '走る、跳ぶ、運動をするときに、尿が漏れましたか?' },
+    { id: 'S6', set: 'S', kind: 'seg', opts: FREQ, legend: true, short: '長い立ち仕事・家事のあと', t: '長い立ち仕事や家事のあとに、尿が漏れましたか?' },
+    { id: 'S7', set: 'S', kind: 'stack', opts: ['漏れない', '下着が少し湿る', 'パッドが湿る', 'パッドを替えたい、服まで濡れる'], t: '漏れたときの量は、ふつうどのくらいですか?' },
+    { id: 'S8', set: 'S', kind: 'stack', opts: ['使わない', '念のため、たまに使う', '漏れそうな日は使う', '毎日使う'], t: 'パッドやライナーは使っていますか?' },
+    { id: 'S9', set: 'S', kind: 'seg', opts: FREQ, legend: true, t: '漏れが心配で、運動・外出・人と会う予定を控えることはありますか?' },
+
+    { id: 'U1', set: 'U', kind: 'seg', opts: FREQ_DAY, legend: true, short: '強い尿意', t: 'この2週間で、急に「もう我慢できない」と感じるほど強い尿意がありましたか?' },
+    { id: 'U2', set: 'U', kind: 'seg', opts: FREQ_DAY, legend: true, short: '間に合わず漏れる', t: 'トイレに間に合わず、漏れてしまったことはありましたか?' },
+    { id: 'U3', set: 'U', kind: 'seg', opts: FREQ_DAY, legend: true, short: '念のためのトイレ', t: '「念のため」「行けるうちに」と、トイレに行くことはありましたか?' },
+    { id: 'U5', set: 'U', kind: 'seg', opts: FREQ_DAY, legend: true, short: 'トイレの場所が気になる', t: 'トイレの場所を気にして、行動が変わることはありましたか?(席の選び方、外出先の確認など)' },
+    { id: 'U6', set: 'U', kind: 'seg', opts: FREQ_DAY, legend: true, short: '水分を控える', t: 'トイレを避けるために、水分を控えることはありましたか?' }
+  ];
+
+  var S_IDS = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'];
+  // 夜間の回数(M3)は、切迫・頻尿チェックの1項目として数えます
+  var U_IDS = ['U1', 'U2', 'U3', 'M3', 'U5', 'U6'];
+  var SEC = { M: 'ミニチェック', S: '腹圧性チェック', U: '切迫・頻尿チェック' };
+
+  var S_SEGS = [{ k: 'l1', w: 7.5, label: '軽め' }, { k: 'l2', w: 9, label: '中くらい' }, { k: 'l3', w: 10.5, label: '強め' }];
+  var U_SEGS = [{ k: 'l1', w: 3.5, label: '軽め' }, { k: 'l2', w: 6, label: '中くらい' }, { k: 'l3', w: 8.5, label: '強め' }];
+
+  var BAND_S = {
+    l0: { k: 'l0', label: 'なし', body: 'この2週間は、力が入る場面での尿もれはありませんでした。息を止めずに動く、便秘を避けるなど、いまの状態を保つ習慣を続けましょう。' },
+    l1: { k: 'l1', label: '軽め', body: 'ときどき、力が入る場面で漏れているようです。セルフケアから始めやすい段階です。' },
+    l2: { k: 'l2', label: '中くらい', body: '漏れや、そのための備えが、生活のなかで目立ってきているようです。収縮のやり方が合っているかを確認すると、練習を続けやすくなります。' },
+    l3: { k: 'l3', label: '強め', body: '漏れや、予定を控える気持ちが、日々の生活に大きく関わっているようです。先に泌尿器科や女性外来で相談することをおすすめします。' }
+  };
+  var BAND_U = {
+    l0: { k: 'l0', label: 'ほとんどなし', body: '急な尿意や、間に合わない場面は、この2週間はほとんどありませんでした。' },
+    l1: { k: 'l1', label: '軽め', body: 'ときどき、急な尿意やトイレの心配があるようです。トイレのタイミングや水分のとり方を、日誌で見直してみましょう。' },
+    l2: { k: 'l2', label: '中くらい', body: '急な尿意や、トイレを気にした行動が、生活のなかに出てきているようです。排尿日誌をつけて、回数や量のパターンを見てみましょう。' },
+    l3: { k: 'l3', label: '強め', body: '急な尿意やトイレの回数が、日々の生活に大きく関わっているようです。先に泌尿器科などで相談することをおすすめします。' }
+  };
+
+  function bandS(n) { return n === 0 ? BAND_S.l0 : n <= 7 ? BAND_S.l1 : n <= 16 ? BAND_S.l2 : BAND_S.l3; }
+  function bandU(n) { return n === 0 ? BAND_U.l0 : n <= 3 ? BAND_U.l1 : n <= 9 ? BAND_U.l2 : BAND_U.l3; }
+  function lv(b) { return b ? +b.k.slice(1) : 0; }
+
+  var $app = document.getElementById('app');
+  var $steps = document.getElementById('steps');
+  var reduce = false;
+  try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  var state = fresh();
+  function fresh() { return { screen: 'intro', flags: {}, ans: {}, list: [], pos: 0, sets: [], forceAll: false }; }
+
+  function miniList() { return QS.filter(function (q) { return q.set === 'M'; }); }
+  function detailSets() {
+    if (state.forceAll) return ['S', 'U'];
+    var out = [];
+    if ((+state.ans.M1 || 0) >= 1) out.push('S');
+    if ((+state.ans.M2 || 0) >= 2) out.push('U');
+    return out;
+  }
+  function buildList(withDetail) {
+    var l = miniList();
+    if (withDetail) detailSets().forEach(function (s) { l = l.concat(QS.filter(function (q) { return q.set === s; })); });
+    state.list = l;
+  }
+  function sum(ids) { return ids.reduce(function (a, id) { return a + (+state.ans[id] || 0); }, 0); }
+  function chosen(lvl) { return FLAGS.filter(function (f) { return state.flags[f.id] && f.lv === lvl; }); }
+
+  function fmtDate(d) { return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日'; }
+  function plusDays(n) { var d = new Date(); d.setDate(d.getDate() + n); return d; }
+
+  /* ---------- screens ---------- */
+  function introHTML() {
+    return '' +
+      '<section class="card">' +
+      '<h1 tabindex="-1">尿もれ・トイレのセルフチェック</h1>' +
+      '<p class="lead">咳やくしゃみで漏れる。急にトイレに行きたくなる。人には話しにくいことを、点数にして見えるようにします。</p>' +
+      '<ul class="facts"><li><b>約3分</b>で終わります</li><li><b>無料</b>です</li><li><b>送信しません</b>回答は保存もされません</li></ul>' +
+      '<ol class="flow"><li>受診が先の項目の確認</li><li>ミニチェック(4問)</li><li>くわしいチェック(5〜14問)</li><li>結果と、次の一歩</li></ol>' +
+      '<p class="soft">理学療法士が作った試作版(v0.1)です。診断ではなく、いまの状態を知り、次の一歩を選ぶための目安として使ってください。</p>' +
+      '<div class="btns"><button class="btn wide" data-act="start" id="btn-start">チェックをはじめる</button></div>' +
+      '</section>';
+  }
+
+  function flagsHTML() {
+    var rows = FLAGS.map(function (f) {
+      return '<label class="flag" for="' + f.id + '"><input type="checkbox" id="' + f.id + '" data-flag="' + f.id + '"' + (state.flags[f.id] ? ' checked' : '') + '><span>' + f.t + '</span></label>';
+    }).join('');
+    return '' +
+      '<section class="card">' +
+      '<h2 tabindex="-1">まず、当てはまるものを選んでください</h2>' +
+      '<p class="soft">どれかに当てはまる場合は、先に医療機関への相談をおすすめします。なければ、何も選ばずに次へ進んでください。</p>' +
+      '<div class="flags">' + rows + '</div>' +
+      '<div class="nav"><button class="btn ghost" data-act="toIntro" id="btn-back-intro">戻る</button><button class="btn" data-act="flagsNext" id="btn-flags-next">次へ</button></div>' +
+      '</section>';
+  }
+
+  function referHTML() {
+    var urgent = chosen('urgent'), see = chosen('see'), ask = chosen('ask');
+    var picked = urgent.concat(see).map(function (f) { return '<li>' + f.t + '</li>'; }).join('');
+    var head = urgent.length ? 'できるだけ早く、医療機関に相談してください' : '先に、医療機関への相談をおすすめします';
+    var msg = urgent.length
+      ? '急な尿もれに、足のしびれや力の入りにくさ、股のあたりの感覚の鈍さがともなうときは、早めの受診が必要なことがあります。今日中の相談を考えてください。迷うときは、お近くの医療機関や自治体の相談窓口に連絡してください。'
+      : '泌尿器科、女性外来、婦人科などで相談してください。受診して、運動をしてよいか確認してから、練習を始めると安心です。';
+    var askNote = ask.length ? '<div class="note ask"><b>主治医への確認も忘れずに</b><p>妊娠中、産後まもない、手術の直後、治療中の方は、運動を始める前に主治医に確認してください。</p></div>' : '';
+    var cont = urgent.length ? '' : '<button class="btn ghost" data-act="skipRefer" id="btn-skip-refer">それでも点数のチェックに進む</button>';
+    return '' +
+      '<section class="card">' +
+      '<h2 tabindex="-1">' + head + '</h2>' +
+      '<div class="note see"><b>選ばれた項目</b><ul class="listed">' + picked + '</ul></div>' +
+      '<p>' + msg + '</p>' + askNote +
+      '<div class="btns"><button class="btn" data-act="toFlags" id="btn-refer-back">選び直す</button>' + cont + '</div>' +
+      '</section>';
+  }
+
+  function qHTML() {
+    var q = state.list[state.pos];
+    var sec = state.list.filter(function (x) { return x.set === q.set; });
+    var i = sec.indexOf(q) + 1, n = sec.length;
+    var cur = state.ans[q.id];
+    var body = '';
+    if (q.kind === 'scale') {
+      var cells = '';
+      for (var v = 0; v <= 10; v++) {
+        cells += '<label class="opt"><input type="radio" name="q" id="o-' + q.id + '-' + v + '" value="' + v + '"' + (cur !== undefined && +cur === v ? ' checked' : '') + '><span>' + v + '</span></label>';
+      }
+      body = '<div class="opts scale">' + cells + '</div><div class="ends"><span>' + q.lo + '</span><span>' + q.hi + '</span></div>';
+    } else {
+      body = '<div class="opts ' + q.kind + '">' + q.opts.map(function (lab, k) {
+        return '<label class="opt"><input type="radio" name="q" id="o-' + q.id + '-' + k + '" value="' + k + '"' + (cur !== undefined && +cur === k ? ' checked' : '') + '><span>' + lab + '</span></label>';
+      }).join('') + '</div>';
+      if (q.legend) body += '<p class="legend">たまに=2週間で1〜2回ほど ／ よくある=週に数回ほど</p>';
+    }
+    var answered = cur !== undefined;
+    var isLast = state.pos === state.list.length - 1;
+    var nextLabel = (q.id === 'M4') ? (answered ? '次へ' : '次へ') : (isLast ? '結果を見る' : '次へ');
+    return '' +
+      '<section class="card">' +
+      '<div class="qhead"><b>' + SEC[q.set] + '</b><span class="c">' + i + ' / ' + n + '</span></div>' +
+      '<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + n + '" aria-valuenow="' + i + '"><i style="width:' + Math.round(i / n * 100) + '%"></i></div>' +
+      '<fieldset><legend tabindex="-1" id="qlegend">' + q.t + '</legend>' + body + '</fieldset>' +
+      '<div class="nav"><button class="btn ghost" data-act="back" id="btn-back">戻る</button><button class="btn" data-act="next" id="btn-next"' + (answered ? '' : ' disabled') + '>' + nextLabel + '</button></div>' +
+      '</section>';
+  }
+
+  function lightHTML() {
+    var night = NIGHT[+state.ans.M3 || 0];
+    return '' +
+      '<section class="card">' +
+      '<h2 tabindex="-1">強い症状は、いまのところ少なめです</h2>' +
+      '<p>この2週間は、力が入る場面での尿もれや、強い尿意で困る場面は多くなかったようです。夜のトイレは1晩あたり' + night + '、困り度は' + (+state.ans.M4) + '/10でした。</p>' +
+      '<p class="soft">気になることがあれば、くわしいチェックもできます。予防のために、今の点数を知っておくこともできます。</p>' +
+      '<div class="btns"><button class="btn wide" data-act="forceAll" id="btn-force">くわしいチェックも受ける(14問)</button><button class="btn ghost wide" data-act="finishLight" id="btn-finish-light">ここで結果を見る</button></div>' +
+      '<div class="nav"><button class="btn ghost" data-act="backFromLight" id="btn-back-light">戻る</button></div>' +
+      '</section>';
+  }
+
+  function meterHTML(score, max, segs, band) {
+    var s = segs.map(function (g) { return '<i class="' + g.k + (band.k === g.k ? ' on' : '') + '" style="flex:' + g.w + '"></i>'; }).join('');
+    var t = segs.map(function (g) { return '<span style="flex:' + g.w + '">' + g.label + '</span>'; }).join('');
+    return '<div class="meter" role="img" aria-label="' + max + '点中' + score + '点(' + band.label + ')"><span class="pin" style="left:' + (score / max * 100) + '%"></span><div class="segs">' + s + '</div><div class="ticks">' + t + '</div></div>';
+  }
+
+  function spots(ids) {
+    var hit = ids.filter(function (id) { return (+state.ans[id] || 0) >= 2; });
+    if (!hit.length) hit = ids.filter(function (id) { return (+state.ans[id] || 0) >= 1; });
+    return hit.map(function (id) { var q = QS.filter(function (x) { return x.id === id; })[0]; return '<span>' + q.short + '</span>'; }).join('');
+  }
+
+  function metricHTML(title, score, max, segs, band, bandText, spotIds, spotLabel) {
+    var sp = spots(spotIds);
+    return '' +
+      '<div class="metric">' +
+      '<div class="mhead"><h3>' + title + '</h3><span class="chip l' + lv(band) + '">' + band.label + '</span></div>' +
+      '<div class="score"><span class="num">' + score + '</span><span class="max">/ ' + max + '点</span></div>' +
+      meterHTML(score, max, segs, band) +
+      '<p class="mbody">' + bandText + '</p>' +
+      (sp ? '<p class="spots-k">' + spotLabel + '</p><div class="spots">' + sp + '</div>' : '') +
+      '</div>';
+  }
+
+  function summaryText(S, U) {
+    var d = fmtDate(new Date()), nx = fmtDate(plusDays(42));
+    var lines = ['【imaaru 尿もれセルフチェック】' + d];
+    if (S !== null) lines.push('腹圧性チェック:' + S + '/27点(' + bandS(S).label + ')');
+    if (U !== null) lines.push('切迫・頻尿チェック:' + U + '/18点(' + bandU(U).label + ')');
+    lines.push('夜のトイレ:1晩あたり' + NIGHT[+state.ans.M3 || 0] + ' / 困り度:' + (+state.ans.M4) + '/10');
+    lines.push('※診断ではなく目安です(試作版 v0.1)');
+    lines.push('次回は6週後(' + nx + 'ごろ)にもう一度。');
+    return lines.join('\n');
+  }
+
+  function resultHTML() {
+    var hasS = state.sets.indexOf('S') >= 0, hasU = state.sets.indexOf('U') >= 0;
+    var S = hasS ? sum(S_IDS) : null, U = hasU ? sum(U_IDS) : null;
+    var sb = hasS ? bandS(S) : null, ub = hasU ? bandU(U) : null;
+    var tend = hasS && hasU ? ['混合の傾向', '力が入る場面と、急な尿意の両方に当てはまります'] :
+      hasS ? ['腹圧性の傾向', '力が入る場面で漏れやすいタイプです'] :
+      hasU ? ['切迫・頻尿の傾向', '急な尿意や、トイレの回数が気になるタイプです'] :
+      ['強い症状は少なめ', 'いまは、予防の段階といえます'];
+    var worst = Math.max(lv(sb), lv(ub));
+    var strong = (hasS && S >= 17) || (hasU && U >= 10);
+
+    var banners = '';
+    if (strong) banners += '<div class="note see"><b>先に、医療機関への相談をおすすめします</b><p>点数が「強め」の区分です。泌尿器科や女性外来で相談して、運動を始めてよいか確認してから、練習を始めると安心です。</p></div>';
+    if (chosen('see').length) banners += '<div class="note see"><b>受診が先の項目を選んでいます</b><p>この点数は、受診のかわりにはなりません。先に医療機関で相談してください。</p></div>';
+    if (chosen('ask').length) banners += '<div class="note ask"><b>主治医への確認を</b><p>妊娠中、産後まもない、手術の直後、治療中の方は、運動を始める前に主治医に確認してください。</p></div>';
+
+    var metrics = '';
+    if (hasS) metrics += metricHTML('腹圧性チェック', S, 27, S_SEGS, sb, sb.body, S_IDS.slice(0, 6), '漏れやすい場面');
+    if (hasU) metrics += metricHTML('切迫・頻尿チェック', U, 18, U_SEGS, ub, ub.body, ['U1', 'U2', 'U3', 'U5', 'U6'], '気になる場面');
+
+    var small = '<div class="small-metrics"><div><b>' + NIGHT[+state.ans.M3 || 0] + '</b>夜のトイレ(1晩あたり)</div><div><b>' + (+state.ans.M4) + ' / 10</b>困り度</div></div>';
+
+    var steps = [];
+    steps.push('3日間、トイレに行った回数、漏れた回数、飲んだ量をメモしてみましょう。点数と一緒に見ると、変化に気づきやすくなります。');
+    steps.push(fmtDate(plusDays(42)) + 'ごろ(6週後)に、もう一度このチェックをして、点数を比べましょう。');
+    if (worst >= 3) steps.push('先に泌尿器科や女性外来で相談して、運動を始めてよいか確認しましょう。');
+    else if (worst === 2) steps.push('骨盤底筋の練習は、収縮のやり方が合っているかを専門家に確認してもらうと、続けやすくなります。');
+    else if (worst === 1) steps.push('骨盤底筋の練習は、息を止めず、お腹に力を入れすぎずに行うのが基本です。');
+    else steps.push('いまの状態を保つために、便秘を避け、息を止めずに動くことを心がけましょう。');
+    if (hasU && (+state.ans.U6 || 0) >= 1) steps.push('トイレが心配で水分を控えている場合は、控えすぎないようにしましょう。');
+    if (hasU && (+state.ans.U3 || 0) >= 2) steps.push('「念のため」のトイレが習慣になっていないか、日誌で見てみましょう。');
+
+    var links = '';
+    if (LINKS.note) links += '<a class="btn" href="' + LINKS.note + '" target="_blank" rel="noopener">noteで続きを読む</a>';
+    if (LINKS.instagram) links += '<a class="btn ghost" href="' + LINKS.instagram + '" target="_blank" rel="noopener">Instagramを見る</a>';
+    if (LINKS.consult) links += '<a class="btn ghost" href="' + LINKS.consult + '" target="_blank" rel="noopener">相談・モニターについて</a>';
+
+    return '' +
+      banners +
+      '<article class="rcard" id="rcard">' +
+      '<div class="rtop"><b>imaaru セルフチェック</b><span>' + fmtDate(new Date()) + '</span></div>' +
+      '<div class="rbody">' +
+      '<div class="tend"><span class="k">あなたの傾向(診断ではありません)</span><span class="v">' + tend[0] + '</span><span class="soft">' + tend[1] + '</span></div>' +
+      metrics + small +
+      '</div>' +
+      '<div class="rfoot">試作版 v0.1 ／ 点数は、ご自身の前後比較と、次の一歩を選ぶための目安です。</div>' +
+      '</article>' +
+      '<section class="card"><h2 tabindex="-1" id="rh">次の一歩</h2><ul class="listed">' + steps.map(function (s) { return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+      '<p class="soft">このカードは、画面を保存(スクリーンショット)しておくと、6週後の自分と見比べられます。</p>' +
+      '<div class="btns"><button class="btn" data-act="copy" id="btn-copy">結果をコピー</button></div>' +
+      '<div id="copyarea" hidden><p class="soft" id="copymsg"></p><textarea class="copybox" id="copybox" readonly aria-label="結果の文章"></textarea></div>' +
+      '</section>' +
+      '<section class="cta"><h3>点数の変化を、一緒に見ながら続けたい方へ</h3><p>12週のサポートや、モニターのご案内は、imaaruのnote・Instagramでお知らせします。1人で続けるのが難しいときに、見直すきっかけにしてください。</p>' + (links ? '<div class="btns">' + links + '</div>' : '') + '</section>' +
+      '<div class="btns"><button class="btn ghost wide" data-act="restart" id="btn-restart">はじめからやり直す</button></div>' +
+      '<p class="soft">このチェックは、医療機関での診断や治療のかわりにはなりません。症状が続く、強くなる、心配なときは、医療機関に相談してください。回答は、この画面の中だけで計算しています。</p>';
+  }
+
+  /* ---------- render ---------- */
+  function stepsFor() {
+    if (state.screen === 'intro') return -1;
+    if (state.screen === 'flags' || state.screen === 'refer') return 0;
+    if (state.screen === 'light') return 1;
+    if (state.screen === 'q') return state.list[state.pos].set === 'M' ? 1 : 2;
+    return 3;
+  }
+  function renderSteps() {
+    var cur = stepsFor();
+    if (cur < 0) { $steps.hidden = true; return; }
+    var names = ['受診の確認', 'ミニ版', 'くわしく', '結果'];
+    $steps.hidden = false;
+    $steps.innerHTML = '<ol class="steps">' + names.map(function (n, i) {
+      var c = i < cur ? 'done' : i === cur ? 'now' : '';
+      return '<li class="' + c + '"' + (i === cur ? ' aria-current="step"' : '') + '><span class="n">' + (i + 1) + '</span>' + n + '</li>';
+    }).join('') + '</ol>';
+  }
+  function render() {
+    var s = state.screen;
+    $app.innerHTML = s === 'intro' ? introHTML() : s === 'flags' ? flagsHTML() : s === 'refer' ? referHTML() : s === 'q' ? qHTML() : s === 'light' ? lightHTML() : resultHTML();
+    renderSteps();
+    window.scrollTo(0, 0);
+    var f = $app.querySelector('[tabindex="-1"]');
+    if (f) { try { f.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function go(s) { state.screen = s; render(); }
+
+  /* ---------- actions ---------- */
+  function startMini() { buildList(false); state.pos = 0; state.sets = []; go('q'); }
+  function next() {
+    var q = state.list[state.pos];
+    if (state.ans[q.id] === undefined) return;
+    if (q.id === 'M4') {
+      state.sets = detailSets();
+      if (!state.sets.length) { go('light'); return; }
+      buildList(true); state.pos += 1; go('q'); return;
+    }
+    if (state.pos < state.list.length - 1) { state.pos += 1; go('q'); } else { go('result'); }
+  }
+  function back() {
+    if (state.pos > 0) { state.pos -= 1; go('q'); } else { go('flags'); }
+  }
+
+  $app.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.matches('input[data-flag]')) { state.flags[t.getAttribute('data-flag')] = t.checked; return; }
+    if (t.matches('input[name="q"]')) {
+      var q = state.list[state.pos], p = state.pos;
+      state.ans[q.id] = +t.value;
+      var nb = document.getElementById('btn-next');
+      if (nb) nb.disabled = false;
+      setTimeout(function () { if (state.screen === 'q' && state.pos === p) next(); }, reduce ? 0 : 240);
+    }
+  });
+
+  $app.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act]');
+    if (!b) return;
+    var a = b.getAttribute('data-act');
+    if (a === 'start') go('flags');
+    else if (a === 'toIntro') go('intro');
+    else if (a === 'toFlags') go('flags');
+    else if (a === 'flagsNext') {
+      if (chosen('urgent').length || chosen('see').length) go('refer'); else startMini();
+    }
+    else if (a === 'skipRefer') startMini();
+    else if (a === 'next') next();
+    else if (a === 'back') back();
+    else if (a === 'backFromLight') { buildList(false); state.pos = 3; go('q'); }
+    else if (a === 'forceAll') { state.forceAll = true; state.sets = ['S', 'U']; buildList(true); state.pos = 4; go('q'); }
+    else if (a === 'finishLight') { state.sets = []; go('result'); }
+    else if (a === 'restart') { state = fresh(); go('intro'); }
+    else if (a === 'copy') {
+      var hasS = state.sets.indexOf('S') >= 0, hasU = state.sets.indexOf('U') >= 0;
+      var text = summaryText(hasS ? sum(S_IDS) : null, hasU ? sum(U_IDS) : null);
+      var area = document.getElementById('copyarea'), box = document.getElementById('copybox'), msg = document.getElementById('copymsg');
+      box.value = text;
+      var done = function (ok) {
+        area.hidden = false;
+        msg.textContent = ok ? 'コピーしました。メモやnoteに貼り付けて残せます。' : 'コピーできないときは、下の文章を選んでコピーしてください。';
+        if (!ok) { box.focus(); box.select(); }
+      };
+      try { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); }); }
+      catch (err) { done(false); }
+    }
+  });
+
+  render();
+})();
+</script>
+</html>
